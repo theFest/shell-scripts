@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ## Azure CLI script that you can use to upload one or more files to Azure Storage with an access key ##
 #1.) chmod +x upload_to_azure.sh
 #2.) ./upload_to_azure.sh <file_path> or ./upload_to_azure.sh file1.txt file2.txt file3.txt
