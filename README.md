@@ -1,6 +1,6 @@
-# 👯‍♀️ Shell 
+# 👯‍♀️ Shell
 
-A collection of various Python scripts
+A collection of various Bash scripts
 
 
 

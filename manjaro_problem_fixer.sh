@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# Colors for text formatting
+## Provides a menu of options to fix various common problems in a Manjaro OS
+
+## Colors for text formatting
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
@@ -8,12 +10,12 @@ BLUE='\033[0;34m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-# Function to print header text
+## Function to print header text
 print_header() {
     echo -e "${BLUE}${BOLD}$1${RESET}"
 }
 
-# Function to fix package conflicts
+## Function to fix package conflicts
 fix_package_conflicts() {
     print_header "Fix package conflicts"
     sudo pacman -Syyu --noconfirm
@@ -24,7 +26,7 @@ fix_package_conflicts() {
     echo -e "${GREEN}Package conflicts fixed.${RESET}"
 }
 
-# Function to fix sound problems
+## Function to fix sound problems
 fix_sound_problems() {
     print_header "Fix sound problems"
     sudo pacman -S --needed --noconfirm alsa-utils
@@ -32,14 +34,14 @@ fix_sound_problems() {
     echo -e "${GREEN}Sound problems fixed.${RESET}"
 }
 
-# Function to fix network problems
+## Function to fix network problems
 fix_network_problems() {
     print_header "Fix network problems"
     sudo systemctl restart NetworkManager
     echo -e "${GREEN}Network problems fixed.${RESET}"
 }
 
-# Function to fix boot problems
+## Function to fix boot problems
 fix_boot_problems() {
     print_header "Fix boot problems"
     sudo pacman -S --needed --noconfirm grub
@@ -48,21 +50,28 @@ fix_boot_problems() {
     echo -e "${GREEN}Boot problems fixed.${RESET}"
 }
 
-# Function to fix display problems
+## Function to fix display problems
 fix_display_problems() {
     print_header "Fix display problems"
     sudo mhwd -a pci nonfree 0300
     echo -e "${GREEN}Display problems fixed.${RESET}"
 }
 
-# Function to fix system updates
+## Function to fix system updates
 fix_system_updates() {
     print_header "Fix system updates"
     sudo pacman-mirrors -f 5 && sudo pacman -Syyu --noconfirm
     echo -e "${GREEN}System updates fixed.${RESET}"
 }
 
-# Function to print the main menu
+## Function to fix databases sync
+fix_sync_databases() {
+    print_header "Fix failed to sync databases"
+    sudo pamac upgrade --force-refresh
+    echo -e "${GREEN}Sync databases fixed.${RESET}"
+}
+
+## Function to print the main menu
 print_menu() {
     echo ""
     echo -e "${BLUE}${BOLD}====== Manjaro Problem Fixer ======${RESET}"
@@ -72,11 +81,12 @@ print_menu() {
     echo "4. Fix boot problems"
     echo "5. Fix display problems"
     echo "6. Fix system updates"
-    echo "7. Exit"
+    echo "6. Fix databases sync"
+    echo "8. Exit"
     echo -e "${BLUE}${BOLD}=================================${RESET}"
 }
 
-# Loop to print the menu and execute the selected option
+## Loop to print the menu and execute the selected option
 while true; do
     print_menu
     read -p "Select an option: " option
@@ -87,7 +97,8 @@ while true; do
         4) fix_boot_problems;;
         5) fix_display_problems;;
         6) fix_system_updates;;
-        7) exit;;
+        7) fix_sync_databases;;
+        8) exit;;
         *) echo -e "${RED}Invalid option. Please try again.${RESET}";;
     esac
 done
