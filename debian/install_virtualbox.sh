@@ -15,13 +15,21 @@ error_exit() {
 # Function to install VirtualBox from a specific URL
 install_virtualbox() {
   local download_url="$1"
+  local package_name="virtualbox.deb"
 
   echo "Downloading VirtualBox..."
-  wget "$download_url" -O virtualbox.deb || error_exit "Failed to download VirtualBox"
-  dpkg -r virtualbox || error_exit "Failed to remove existing VirtualBox"
-  dpkg -i virtualbox.deb || error_exit "Failed to install VirtualBox"
+  wget "$download_url" -O "$package_name" || error_exit "Failed to download VirtualBox"
+  
+  # Check if VirtualBox is already installed
+  if dpkg -l | grep -q "virtualbox"; then
+    echo "Uninstalling existing VirtualBox..."
+    dpkg -r virtualbox || error_exit "Failed to remove existing VirtualBox"
+  fi
+  
+  echo "Installing VirtualBox..."
+  dpkg -i "$package_name" || error_exit "Failed to install VirtualBox"
   apt-get install -f || error_exit "Failed to resolve dependencies"
-  rm virtualbox.deb || error_exit "Failed to remove temporary files"
+  rm "$package_name" || error_exit "Failed to remove temporary files"
 }
 
 # Ask the user for confirmation
@@ -31,11 +39,18 @@ case "$choice" in
     download_url="https://download.virtualbox.org/virtualbox/7.0.10/virtualbox-7.0_7.0.10-158379~Debian~bookworm_amd64.deb"
     install_virtualbox "$download_url"
     echo "VirtualBox 7.0.10 has been successfully installed."
+    
+    # Start the VirtualBox service if not already running
+    if ! systemctl is-active --quiet virtualbox; then
+      systemctl start virtualbox
+      echo "VirtualBox service started."
+    fi
     ;;
   *)
     echo "Installation canceled."
     ;;
 esac
+
 
 # chmod +x install_virtualbox.sh
 
