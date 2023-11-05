@@ -12,46 +12,75 @@ error_exit() {
   exit 1
 }
 
-# Function to install VirtualBox from a specific URL
+# Function to install VirtualBox
 install_virtualbox() {
   local download_url="$1"
   local package_name="virtualbox.deb"
 
   echo "Downloading VirtualBox..."
   wget "$download_url" -O "$package_name" || error_exit "Failed to download VirtualBox"
-  
-  # Check if VirtualBox is already installed
-  if dpkg -l | grep -q "virtualbox"; then
+
+  if dpkg -l virtualbox-* | grep "ii" > /dev/null; then
     echo "Uninstalling existing VirtualBox..."
-    dpkg -r virtualbox || error_exit "Failed to remove existing VirtualBox"
+    apt-get remove --purge virtualbox-* -y || error_exit "Failed to remove existing VirtualBox"
   fi
-  
+
   echo "Installing VirtualBox..."
   dpkg -i "$package_name" || error_exit "Failed to install VirtualBox"
-  apt-get install -f || error_exit "Failed to resolve dependencies"
+  apt-get install -f -y || error_exit "Failed to resolve dependencies"
   rm "$package_name" || error_exit "Failed to remove temporary files"
 }
 
-# Ask the user for confirmation
-read -p "This script will download and install VirtualBox 7.0.10 for Debian. Do you want to continue? (Y/N): " choice
-case "$choice" in
-  [yY]|[yY][eE][sS])
-    download_url="https://download.virtualbox.org/virtualbox/7.0.10/virtualbox-7.0_7.0.10-158379~Debian~bookworm_amd64.deb"
-    install_virtualbox "$download_url"
-    echo "VirtualBox 7.0.10 has been successfully installed."
-    
-    # Start the VirtualBox service if not already running
-    if ! systemctl is-active --quiet virtualbox; then
-      systemctl start virtualbox
-      echo "VirtualBox service started."
-    fi
-    ;;
-  *)
-    echo "Installation canceled."
-    ;;
-esac
+# Function to uninstall VirtualBox
+uninstall_virtualbox() {
+  if dpkg -l virtualbox-* | grep "ii" > /dev/null; then
+    echo "Uninstalling VirtualBox..."
+    apt-get remove --purge virtualbox-* -y || error_exit "Failed to uninstall VirtualBox"
+    echo "VirtualBox has been uninstalled."
+  else
+    echo "VirtualBox is not installed."
+  fi
+}
 
+# Function to download VirtualBox Guest Additions
+download_guest_additions() {
+  local version="7.0.10"
+  local download_url="https://download.virtualbox.org/virtualbox/$version/VBoxGuestAdditions_$version.iso"
+  local destination_folder="/tmp/guest_additions"
 
-# chmod +x install_virtualbox.sh
+  echo "Downloading VirtualBox Guest Additions..."
+  mkdir -p "$destination_folder"
+  wget "$download_url" -P "$destination_folder" || error_exit "Failed to download Guest Additions"
 
-# sudo ./install_virtualbox.sh
+  echo "VirtualBox Guest Additions downloaded to $destination_folder"
+}
+
+# Main menu
+while true; do
+  echo "Main Menu:"
+  echo "1. Install VirtualBox"
+  echo "2. Uninstall VirtualBox"
+  echo "3. Download VirtualBox Guest Additions"
+  echo "4. Exit"
+  read -p "Select an option (1/2/3/4): " choice
+  case "$choice" in
+    1)
+      download_url="https://download.virtualbox.org/virtualbox/7.0.10/virtualbox-7.0_7.0.10-158379~Debian~bookworm_amd64.deb"
+      install_virtualbox "$download_url"
+      echo "VirtualBox 7.0.10 has been successfully installed."
+      ;;
+    2)
+      uninstall_virtualbox
+      ;;
+    3)
+      download_guest_additions
+      ;;
+    4)
+      echo "Exiting the script."
+      exit 0
+      ;;
+    *)
+      echo "Invalid choice. Please select a valid option."
+      ;;
+  esac
+done
